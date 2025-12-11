@@ -1,0 +1,21 @@
+sources:
+  - name: 壹蘋網
+    url: https://rss.app/feeds/xbSszaNUPlqwbKVw.xml
+    note: 壹蘋新聞 RSS
+    enabled: true
+
+  - name: 中天網
+    url: https://rss.app/feeds/ItTwnpd7hZoyBewW.xml
+    note: 中天網 RSS
+    enabled: true
+
+  - name: 知新聞
+    url: https://rss.app/feeds/8bB0Pdrpgt9rLQdp.xml
+    note: 知新聞 RSS
+    enabled: true
+  - name: 東森網
+    url: https://rss.app/feeds/McldCNTuvCpbIUXK.xml
+    note: 東森網 RSS
+    enabled: true
+
+  - 
