@@ -13,9 +13,63 @@ sources:
     url: https://rss.app/feeds/8bB0Pdrpgt9rLQdp.xml
     note: 知新聞 RSS
     enabled: true
+
   - name: 東森網
     url: https://rss.app/feeds/McldCNTuvCpbIUXK.xml
     note: 東森網 RSS
     enabled: true
 
-  - 
+  - name: 周刊王
+    url: https://rss.app/feeds/HKvvzxUV98S5ewB1.xml
+    note: 周刊王 RSS
+    enabled: true
+
+  - name: 三立網
+    url: https://rss.app/feeds/bhRtFXxBWu7Z4prP.xml
+    note: 三立網 RSS
+    enabled: true
+  
+  - name: 東森雲
+    url: https://rss.app/feeds/IaN0YEForU5mKubx.xml
+    note: 東森雲 RSS
+    enabled: true
+  
+  - name: 聯即
+    url: https://rss.app/feeds/IyPYHseGeOfergjf.xml
+    note: 聯即 RSS
+    enabled: true
+  
+  - name: 中即
+    url: https://rss.app/feeds/JCgqtHQvp5jr1KTl.xml
+    note: 中即 RSS
+    enabled: true
+  
+  - name: 鏡報
+    url: https://rss.app/feeds/GIo7wo6XKxUZb5H7.xml
+    note: 鏡報 RSS
+    enabled: true
+
+  - name: TVBS
+    url: https://rss.app/feeds/yjTUW7s0PhzM1Ier.xml
+    note: TVBS RSS
+    enabled: true
+
+  - name: 鏡週刊
+    url: https://rss.app/feeds/GIo7wo6XKxUZb5H7.xml
+    note: 鏡週刊 RSS
+    enabled: true
+
+  - name: 鏡新聞
+    url: https://rss.app/feeds/uvEEyjlMx9Yg9UIb.xml
+    note: 鏡新聞 RSS
+    enabled: true
+  
+  - name: 自即
+    url: https://rss.app/feeds/5V6dxPaXYNLpBf0K.xml
+    note: 自即 RSS
+    enabled: true
+  
+  - name: 中央社
+    url: https://rss.app/feeds/pHGTBwvRCfvxDoG2.xml
+    note: 中央社 RSS
+    enabled: true 
