@@ -21,6 +21,10 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Create sources.yml from Secrets
+        run: |
+          echo "${{ secrets.SOURCES_YML }}" > sources.yml
+
       - name: Run bot
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
