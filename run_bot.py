@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import feedparser
 import yaml
@@ -10,20 +11,27 @@ load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-def send_telegram(text: str):
+def send_telegram(text: str, delay: int):
     if not TELEGRAM_TOKEN or not CHAT_ID:
         print("❌ 缺少 TELEGRAM_TOKEN 或 CHAT_ID")
         return
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     resp = requests.post(url, json={
-        "chat_id": CHAT_ID, 
-        "text": text, 
-        "disable_web_page_preview": True   # 關閉縮圖
-        })
+        "chat_id": CHAT_ID,
+        "text": text,
+        "disable_web_page_preview": True
+    })
     if resp.status_code != 200:
-        print("❌ 推播失敗:", resp.text)
+        data = resp.json()
+        print("❌ 推播失敗:", data)
+        if data.get("error_code") == 429:
+            retry_after = data["parameters"]["retry_after"]
+            print(f"⏸ 等待 {retry_after} 秒後重試...")
+            time.sleep(retry_after)
+            return send_telegram(text, delay)
     else:
         print("✅ 推播成功")
+    time.sleep(delay)  # 每則訊息之間延遲
 
 def fetch_rss(source_name, url, keywords, match_mode="any"):
     results = []
@@ -31,10 +39,13 @@ def fetch_rss(source_name, url, keywords, match_mode="any"):
         feed = feedparser.parse(url)
         for entry in feed.entries:
             title, link = entry.title, entry.link
+            summary = getattr(entry, "summary", getattr(entry, "description", ""))
+            text_to_check = f"{title} {summary}"
+
             if keywords:
-                if match_mode == "any" and any(kw in title for kw in keywords):
+                if match_mode == "any" and any(kw in text_to_check for kw in keywords):
                     results.append((source_name, title, link))
-                elif match_mode == "all" and all(kw in title for kw in keywords):
+                elif match_mode == "all" and all(kw in text_to_check for kw in keywords):
                     results.append((source_name, title, link))
             else:
                 results.append((source_name, title, link))
@@ -47,11 +58,10 @@ def main():
     with open("sources.yml", "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
-    # 關鍵字設定
-    keywords = ["新北"]   # 只推播含有「新北」的新聞
-    match_mode = "any"
+    keywords = config.get("keywords", ["新北"])   # 從 YAML 讀取關鍵字
+    match_mode = config.get("match_mode", "any") # 從 YAML 讀取比對模式
+    delay = config.get("delay", 1)               # 從 YAML 讀取延遲秒數，預設 1 秒
 
-    # 抓取並推播
     for source in config["sources"]:
         if not source.get("enabled", True):
             print(f"⏸ 跳過來源: {source['name']}")
@@ -59,9 +69,11 @@ def main():
         name = source["name"]
         url = source["url"]
         results = fetch_rss(name, url, keywords, match_mode)
+
+        # 每則新聞單獨推播
         for src, title, link in results:
             message = f"{src}\n{title}\n{link}"
-            send_telegram(message)
+            send_telegram(message, delay)
 
 if __name__ == "__main__":
     main()
