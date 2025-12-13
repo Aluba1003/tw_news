@@ -3,12 +3,40 @@ import time
 import requests
 import feedparser
 import yaml
+import json
 from dotenv import load_dotenv
+from collections import OrderedDict
 
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+
+PUSHED_FILE = "pushed.json"
+MAX_RECORDS = 1000  # 限制最多保留 1000 筆紀錄
+
+# 載入已推播紀錄
+def load_pushed_records():
+    if os.path.exists(PUSHED_FILE):
+        try:
+            with open(PUSHED_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return OrderedDict(data)
+        except Exception as e:
+            print(f"❌ 無法讀取 {PUSHED_FILE}: {e}")
+    return OrderedDict()
+
+# 儲存已推播紀錄
+def save_pushed_records(records):
+    while len(records) > MAX_RECORDS:
+        records.popitem(last=False)  # 刪掉最舊的
+    try:
+        with open(PUSHED_FILE, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"❌ 無法寫入 {PUSHED_FILE}: {e}")
+
+pushed_records = load_pushed_records()
 
 def send_telegram(text: str, delay: int):
     if not TELEGRAM_TOKEN or not CHAT_ID:
@@ -40,6 +68,10 @@ def fetch_rss(source_name, url, keywords, match_mode="any"):
             title, link = entry.title, entry.link
             summary = getattr(entry, "summary", getattr(entry, "description", ""))
             text_to_check = f"{title} {summary}"
+
+            # 🚫 排除標題結尾有 "- 生活" 的新聞
+            if title.strip().endswith("- 生活"):
+                continue
 
             if keywords:
                 if match_mode == "any" and any(kw in text_to_check for kw in keywords):
@@ -92,8 +124,19 @@ def main():
         results = fetch_rss(name, url, keywords, match_mode)
 
         for src, title, link in results:
-            message = f"{src}\n{title}\n{link}"
-            send_telegram(message, delay)
+            prev_title = pushed_records.get(link)
+            if prev_title is None:
+                pushed_records[link] = title
+                message = f"{src}\n{title}\n{link}"
+                send_telegram(message, delay)
+                save_pushed_records(pushed_records)
+            elif prev_title != title:
+                pushed_records[link] = title
+                message = f"{src}\n{title}\n{link}"
+                send_telegram(message, delay)
+                save_pushed_records(pushed_records)
+            else:
+                print(f"⏸ 跳過重複: {title} ({link})")
 
 if __name__ == "__main__":
     main()
