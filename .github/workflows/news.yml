@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "*/20 * * * *"   # 每 20 分鐘執行一次
 
+permissions:
+  contents: write   # 讓 GITHUB_TOKEN 有寫入 repo 的權限
+
 jobs:
   run-news-bot:
     runs-on: ubuntu-latest
@@ -31,3 +34,11 @@ jobs:
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
           python run_bot.py
+
+      - name: Commit pushed.json back to repo (force push)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add pushed.json
+          git diff --cached --quiet || git commit -m "Update pushed.json"
+          git push origin HEAD:main --force
